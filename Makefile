@@ -195,7 +195,7 @@ ifeq ($(BUILD_IN_CONTAINER),true)
 
 # This make target compiles all binaries inside of the weaveworks/build container
 # It bind-mounts the source into the container and passes all important variables
-exes $(EXES) tests lint: $(BUILD_UPTODATE)
+exes $(EXES) tests lint:
 	git submodule update --init
 # Containernetworking has another copy of vishvananda/netlink which leads to duplicate definitions
 	-@rm -r vendor/github.com/containernetworking/cni/vendor

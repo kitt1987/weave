@@ -214,6 +214,7 @@ func main() {
 	mflag.StringVar(&discoveryEndpoint, []string{"-peer-discovery-url"}, "https://cloud.weave.works/api/net", "url for peer discovery")
 	mflag.StringVar(&token, []string{"-token"}, "", "token for peer discovery")
 	mflag.StringVar(&advertiseAddress, []string{"-advertise-address"}, "", "address to advertise for peer discovery")
+	mflag.BoolVar(&bridgeConfig.NoNAT, []string{"-no-nat"}, false, "do not set nat rules on expose")
 
 	mflag.BoolVar(&pluginConfig.Enable, []string{"-plugin"}, false, "enable Docker plugin (v1)")
 	mflag.BoolVar(&pluginConfig.EnableV2, []string{"-plugin-v2"}, false, "enable Docker plugin (v2)")
@@ -502,7 +503,7 @@ func exposeForAWSVPC(alloc *ipam.Allocator, subnet address.CIDR, bridgeName stri
 	addr, err := alloc.Allocate("weave:expose", subnet, false, func() bool { return false })
 	checkFatal(err)
 	cidr := address.MakeCIDR(subnet, addr)
-	err = weavenet.Expose(bridgeName, cidr.IPNet(), true, false)
+	err = weavenet.Expose(bridgeName, cidr.IPNet(), true, false, false)
 	checkFatal(err)
 	Log.Printf("Bridge %q exposed on address %v", bridgeName, cidr)
 	ready()

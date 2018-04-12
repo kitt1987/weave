@@ -29,20 +29,22 @@ func (router *NetworkRouter) HandleHTTP(muxRouter *mux.Router) {
 		router.ForgetConnections(r.Form["peer"])
 	})
 
-	muxRouter.Methods("POST").Path("/expose/{ip}/{prefixlen}").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		cidr, err := address.ParseCIDR(vars["ip"] + "/" + vars["prefixlen"])
-		if err != nil {
-			http.Error(w, fmt.Sprint("unable to parse ip addr: ", err.Error()), http.StatusBadRequest)
-			return
-		}
+	muxRouter.Methods("POST").Path("/expose/{ip}/{prefixlen}").HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			vars := mux.Vars(r)
+			cidr, err := address.ParseCIDR(vars["ip"] + "/" + vars["prefixlen"])
+			if err != nil {
+				http.Error(w, fmt.Sprint("unable to parse ip addr: ", err.Error()), http.StatusBadRequest)
+				return
+			}
 
-		if err = net.Expose(router.BridgeConfig.WeaveBridgeName, cidr.IPNet(), router.BridgeConfig.AWSVPC, router.BridgeConfig.NPC); err != nil {
-			http.Error(w, fmt.Sprint("unable to expose: ", err.Error()), http.StatusInternalServerError)
-			return
-		}
+			if err = net.Expose(router.BridgeConfig.WeaveBridgeName, cidr.IPNet(), router.BridgeConfig.AWSVPC,
+				router.BridgeConfig.NPC, router.BridgeConfig.NoNAT); err != nil {
+				http.Error(w, fmt.Sprint("unable to expose: ", err.Error()), http.StatusInternalServerError)
+				return
+			}
 
-		w.WriteHeader(204)
-	})
+			w.WriteHeader(204)
+		})
 
 }

@@ -210,6 +210,7 @@ type BridgeConfig struct {
 	NoBridgedFastdp  bool
 	AWSVPC           bool
 	NPC              bool
+	NoNAT            bool
 	MTU              int
 	Mac              string
 	Port             int
