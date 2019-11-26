@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/spf13/cobra"
@@ -25,21 +26,23 @@ import (
 )
 
 var (
-	version        = "unreleased"
-	metricsAddr    string
-	logLevel       string
-	allowMcast     bool
-	nodeName       string
-	maxList        int
-	bridgePortName string
+	version              = "unreleased"
+	metricsAddr          string
+	logLevel             string
+	allowMcast           bool
+	nodeName             string
+	maxList              int
+	bridgePortName       string
+	informerResyncPeriod time.Duration
 )
 
 func handleError(err error) { common.CheckFatal(err) }
 
-func makeController(getter cache.Getter, resource string,
-	objType runtime.Object, handlers cache.ResourceEventHandlerFuncs) cache.Controller {
+func makeController(
+	getter cache.Getter, resource string, objType runtime.Object, handlers cache.ResourceEventHandlerFuncs,
+) cache.Controller {
 	listWatch := cache.NewListWatchFromClient(getter, resource, "", fields.Everything())
-	_, controller := cache.NewInformer(listWatch, objType, 0, handlers)
+	_, controller := cache.NewIndexerInformer(listWatch, objType, informerResyncPeriod, handlers, nil)
 	return controller
 }
 
@@ -338,6 +341,7 @@ func main() {
 	rootCmd.PersistentFlags().StringVar(&nodeName, "node-name", "", "only generate rules that apply to this node")
 	rootCmd.PersistentFlags().IntVar(&maxList, "max-list-size", 1024, "maximum size of ipset list (for namespaces)")
 	rootCmd.PersistentFlags().StringVar(&bridgePortName, "bridge-port-name", "vethwe-bridge", "name of the brige port on which packets are received and sent")
+	rootCmd.PersistentFlags().DurationVar(&informerResyncPeriod, "informer-resync-period", 5*time.Minute, "resync period of all informers")
 
 	handleError(rootCmd.Execute())
 }
